@@ -23,7 +23,7 @@ registerWhen(
             const container = Player?.getContainer();
             if (!container || !container.getName().startsWith("Auctions: ")) return;
 
-            const cItems = Player.getContainer().getItems();
+            const cItems = container.getItems();
             profit = {};
 
             slotRanges.forEach(range => {
@@ -43,7 +43,7 @@ registerWhen(
 );
 
 const highlight = register("guiRender", (mx, mt, gui) => {
-    Object.keys(profit).forEach((index) => {
+    Object.keys(profit).forEach(index => {
         const { r, g, b } = profit[index];
         highlightSlot(gui, index, r, g, b, 1, true);
     }); 
@@ -55,7 +55,7 @@ const close = register("guiClosed", () => {
 }).unregister();
 
 registerWhen(
-    register(net.minecraftforge.event.entity.player.ItemTooltipEvent, (event) => {
+    register(net.minecraftforge.event.entity.player.ItemTooltipEvent, event => {
         const item = new Item(event.itemStack);
         const sbID = getSkyblockItemID(item);
         if(!sbID) return;
@@ -71,21 +71,16 @@ function calculateProfit(item, index) {
     const nbt = item?.getNBT() ?? item;
     const itemTag = nbt?.getCompoundTag("tag")?.toObject();
     const itemData = itemTag?.ExtraAttributes;
-    const attributes = Object.keys(itemData?.attributes ?? {} ).sort();
-    const itemLore = Object.values(itemTag?.display.Lore ?? [] ).sort();
+    const attributes = Object.keys(itemData?.attributes ?? {} );
+    const itemLore = Object.values(itemTag?.display.Lore ?? [] );
 
     if (!attributes.length || !isRelevantItem(nbt)) return null;
 
-    let attributeValue = attributes.reduce((sum, attribute) => {
-        return sum + getAttributePrice(itemData.attributes[attribute]);
-    }, 0);
+    let attributeValue = attributes.reduce((sum, attribute) => sum + getAttributePrice(itemData.attributes[attribute]), 0);
 
     if (settings.stars) {
         const starTier = getStarTier(item);
-        let totalEssence = 0;
-        for (let i = 0; i < starTier; i++) {
-            totalEssence += stars[i];
-        }
+        const totalEssence = stars.slice(0, starTier).reduce((sum, value) => sum + value, 0);
         attributeValue += Math.floor(totalEssence / 2);
     }
     if (settings.kuudraPet) {
@@ -96,22 +91,24 @@ function calculateProfit(item, index) {
         attributeValue *= 1 + settings.doubleEssenceTier * 0.04;
     }
 
-    let itemPrice = 0;
-    const foundBuyItNow = itemLore.some((lore) => {
-        const loreStr = lore.toString(); // §7Buy it now: §6398,000 coins
-        if (loreStr.includes("§7Buy it now: §6")) {
-            itemPrice = parseInt(loreStr.split("§6")[1].split(" ")[0].replaceAll(",", ""));
-            return true;
-        }
-        return false;
-    })    
-    if (!foundBuyItNow) return;
+    const itemPrice = parseItemPrice(itemLore);
+    if (itemPrice === null) return;
 
     const profitValue = attributeValue - itemPrice;
     if (index != null && profitValue > settings.min_profit) {
         profit[index] = { index, r: 0, g: 1, b: 0, };
     }
     return profitValue;
+}
+
+function parseItemPrice(lore) {
+    for (let line of lore) {
+        if (line.toString().includes("§7Buy it now: §6")) {
+            const priceStr = line.split("§6")[1].split(" ")[0].replaceAll(",", "");
+            return parseInt(priceStr, 10);
+        }
+    }
+    return null;
 }
 
 function isRelevantItem(nbt) {
@@ -125,7 +122,8 @@ function isRelevantItem(nbt) {
 //§dNecrotic Burning Aurora Leggings §d✪✪✪✪✪
 function getStarTier(item) {
     let star = 0;
-    let itemName = item.getName();
+    const itemName = item.getName();
+
     if (itemName.includes("Hot")) star += 10;
     else if (itemName.includes("Burning")) star += 20;
     else if (itemName.includes("Fiery")) star += 30;
@@ -134,18 +132,14 @@ function getStarTier(item) {
     const regex = /§([d6])([✪]+)/g;
     let match;
 
-    let currentMultiplier = 0;
     while ((match = regex.exec(itemName)) !== null) {
-        const symbol = match[1];
-        const stars = match[2];
-    
-        currentMultiplier = symbol === 'd' ? 2 : 1;
-        star += currentMultiplier * stars.length;
+        const multiplier = match[1] === 'd' ? 2 : 1;
+        star += multiplier * stars.length;
     }
 
     return star;
 }
 
 function getAttributePrice(attributeLevel) {
-    return 10 * Math.pow(2, (attributeLevel - 1)) * settings.crimsonEssencePrice;
+    return 10 * Math.pow(2, attributeLevel - 1) * settings.crimsonEssencePrice;
 }
