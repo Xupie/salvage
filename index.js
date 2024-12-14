@@ -80,7 +80,7 @@ function calculateProfit(item, index) {
 
     if (settings.stars) {
         const starTier = getStarTier(item);
-        const totalEssence = stars.slice(0, starTier).reduce((sum, value) => sum + value, 0);
+        const totalEssence = stars.slice(0, Math.max(0, starTier - 1)).reduce((sum, value) => sum + value, 0);
         attributeValue += Math.floor(totalEssence / 2);
     }
     if (settings.kuudraPet) {
@@ -132,9 +132,13 @@ function getStarTier(item) {
     const regex = /§([d6])([✪]+)/g;
     let match;
 
+    let currentMultiplier = 0;
     while ((match = regex.exec(itemName)) !== null) {
-        const multiplier = match[1] === 'd' ? 2 : 1;
-        star += multiplier * stars.length;
+        const symbol = match[1];
+        const stars = match[2];
+    
+        currentMultiplier = symbol === 'd' ? 2 : 1;
+        star += currentMultiplier * stars.length;
     }
 
     return star;
