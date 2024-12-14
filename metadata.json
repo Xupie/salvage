@@ -1,0 +1,8 @@
+{
+    "name": "Salvage",
+    "creator": "Xupie",
+    "description": "",
+    "entry": "index.js",
+    "version": "1.0.0",
+    "requires": ["Vigilance", "BloomCore", "ListFix"]
+  }
