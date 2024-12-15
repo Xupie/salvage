@@ -63,6 +63,19 @@ class Settings {
     })
     tooltip_profit = false;
 
+    @SwitchProperty({
+        name: "Profit Tracker",
+        category: "General",
+    })
+    profit_tracker = false;
+
+    @SliderProperty({
+        name: "Total Profit",
+        category: "General",
+        hidden: true,
+    })
+    total_profit = 0;
+
     constructor() {
         this.initialize(this);
         this.setCategoryDescription("General", "Salvage")
