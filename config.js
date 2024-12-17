@@ -1,4 +1,4 @@
-import { @Vigilant, @SwitchProperty, @SliderProperty, @SelectorProperty } from  "../Vigilance/index"
+import { @Vigilant, @SwitchProperty, @SliderProperty, @SelectorProperty, @ButtonProperty } from  "../Vigilance/index"
 
 @Vigilant("Salvage")
 class Settings {
@@ -68,6 +68,24 @@ class Settings {
         category: "General",
     })
     profit_tracker = false;
+
+    @ButtonProperty({
+        name: "Move Profit Tracker",
+        category: "General",
+        placeholder: "Click"
+    })
+    move() {
+        ChatLib.command("salvagemove", true)
+    }
+
+    @ButtonProperty({
+        name: "Reset Profit Tracker Position",
+        category: "General",
+        placeholder: "Click"
+    })
+    reset() {
+        ChatLib.command("salvageresetposition", true)
+    }
 
     @SliderProperty({
         name: "Total Profit",

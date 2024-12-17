@@ -16,7 +16,7 @@ const slotRanges = [
 ];
 const stars = [30,35,40,45,50,55,60,70,80,90,150,170,190,215,240,270,300,340,390,440,500,800,900,1000,1125,1270,1450,1850,2100,2350,2650,4500,5000,5600,6300,7000,8000,9000,10200,10500,13000,14500,25500,30000,35000,41000,48000,56000,65500,76000,89000,105000,120000,140000,165000,192000,225000,265000]
 
-const display = new Display({ renderX: 100, renderY: 100 });
+const display = new Display({ renderX: 10, renderY: 10 });
 const gui = new Gui();
 makeDisplayDraggable("Essence Tracker", display, () => gui.isOpen());
 
@@ -24,7 +24,11 @@ let lastMenuIsBin = false;
 var lastProfit = 0;
 
 register("command", () => settings.openGUI()).setCommandName(`salvage`, true);
-register("command", () => gui.open()).setCommandName("salvagemove");
+register("command", () => {
+    gui.open()
+    display.show();
+}).setCommandName("salvagemove");
+register("command", () => display.setRenderX(10).setRenderY(10)).setCommandName("salvageresetposition");
 
 registerWhen(
     register("guiOpened", () => {
