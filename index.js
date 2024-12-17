@@ -84,6 +84,7 @@ registerWhen(
     register("chat", () => {
         if (lastMenuIsBin) {
             Client.scheduleTask(5, () => {
+                if (lastProfit <= 0) return;
                 settings.total_profit += lastProfit;
             })
         }
